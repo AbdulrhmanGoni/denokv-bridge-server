@@ -94,10 +94,11 @@ export function deserializeKvKey(key: string, options?: { allowEmptyKey?: boolea
         }
 
         throw new Error(
-            "Invalid KvKey part. " +
-            "Must be String, Number, Boolean, " +
-            'Bigint wrapped as ({ type: "Bigint", value: "..." }), ' +
-            'or Uint8Array wrapped as ({ type: "Uint8Array", value: "..." }).',
+            "Invalid JSON representation for a KvKey part.\n" +
+            "KvKey part must be String, Number, Boolean, " +
+            'Custom number wrapped as { type: "Number", value: ("NaN", "Infinity" or "-Infinity") }, ' +
+            'Bigint wrapped as { type: "Bigint", value: "..." }, ' +
+            'or Uint8Array wrapped as { type: "Uint8Array", value: "..." }.',
             errorCause
         );
     });
