@@ -30,6 +30,12 @@ export function serializeKvKey(key: KvKey): SerializedKvKey {
             return { type: "Bigint", value: part.toString() }
         }
 
+        if (typeof part === "number") {
+            if ([NaN, Infinity, -Infinity].includes(part)) {
+                return { type: "Number", value: part.toString() }
+            }
+        }
+
         return part
     })
 }
@@ -59,8 +65,17 @@ export function deserializeKvKey(key: string, options?: { allowEmptyKey?: boolea
             return part;
         }
 
-        // Handle custom representation of Uint8Array and Bigint
+        // Handle custom representation of Uint8Array, Infinity, NaN and Bigint
         if (typeof part === "object" && part !== null && typeof part.value === "string") {
+            if (part.type === "Number") {
+                switch (part.value) {
+                    case "Infinity": return Infinity;
+                    case "-Infinity": return -Infinity;
+                    case "NaN": return NaN;
+                    default: throw new Error("Invalid Number value: " + part.value, errorCause);
+                }
+            }
+
             if (part.type === "Uint8Array") {
                 try {
                     return decodeBase64(part.value);
