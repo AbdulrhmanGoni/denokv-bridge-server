@@ -67,7 +67,7 @@ export type SetKeyOptions = {
 export class BridgeServerClient {
     constructor(private baseUrl: string) { }
 
-    browse(options?: BrowsingOptions) {
+    browse(options?: BrowsingOptions): CallBridgeServerReturn<SerializedKvEntry[]> {
         return callBridgeServerRequest<SerializedKvEntry[]>({
             url: `${this.baseUrl}/browse`,
             options,
@@ -75,7 +75,7 @@ export class BridgeServerClient {
         })
     }
 
-    set(key: SerializedKvKey, value: SerializedKvValue, options?: SetKeyOptions) {
+    set(key: SerializedKvKey, value: SerializedKvValue, options?: SetKeyOptions): CallBridgeServerReturn<{ result: true }> {
         return callBridgeServerRequest<{ result: true }>({
             url: `${this.baseUrl}/set`,
             options: {
@@ -87,14 +87,14 @@ export class BridgeServerClient {
         })
     }
 
-    get(key: SerializedKvKey) {
+    get(key: SerializedKvKey): CallBridgeServerReturn<SerializedKvEntry> {
         return callBridgeServerRequest<SerializedKvEntry>({
             url: `${this.baseUrl}/get/${JSON.stringify(key)}`,
             method: "GET"
         })
     }
 
-    delete(key: SerializedKvKey) {
+    delete(key: SerializedKvKey): CallBridgeServerReturn<{ result: true }> {
         return callBridgeServerRequest<{ result: true }>({
             url: `${this.baseUrl}/delete`,
             options: { key },
