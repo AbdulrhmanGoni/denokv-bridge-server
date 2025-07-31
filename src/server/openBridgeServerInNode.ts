@@ -1,9 +1,9 @@
 import { openKv, type Kv } from "@deno/kv";
 import { createBridgeApp } from "./createBridgeApp.ts";
-import { serve } from '@hono/node-server'
+import { serve, type ServerType } from '@hono/node-server'
 
-export async function openBridgeServerInNode(kv?: Kv, port: number = 47168): Promise<void> {
+export async function openBridgeServerInNode(kv?: Kv, port: number = 47168): Promise<ServerType> {
     kv = kv ? kv : await openKv()
     const app = createBridgeApp(kv)
-    serve({ fetch: app.fetch, port })
+    return serve({ fetch: app.fetch, port })
 }
