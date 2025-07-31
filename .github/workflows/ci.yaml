@@ -25,3 +25,6 @@ jobs:
 
       - name: Run the linter
         run: deno lint
+
+      - name: Check package's readiness of being published to JSR
+        run: deno publish --dry-run
