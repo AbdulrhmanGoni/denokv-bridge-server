@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - v*.*.*
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -23,6 +21,15 @@ jobs:
     steps:
       - name: Setup the repo
         uses: actions/checkout@v4
+
+      - name: Ensure tag commit exists in the main branch
+        run: |
+          git fetch origin main
+          TAG_COMMIT=$(git rev-parse ${{ github.ref }})
+          git merge-base --is-ancestor "$TAG_COMMIT" origin/main || {
+            echo "❌ Tag commit is not in the main branch history"
+            exit 1
+          }
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
