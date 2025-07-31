@@ -9,7 +9,7 @@ export type SerializedKvKey = (string | number | boolean | {
 
 export type SerializedKvValue = {
     type: string;
-    data: string | number | boolean | Array<unknown> | Record<string, unknown> | null;
+    data: string | number | boolean;
 }
 
 export type SerializedKvEntry = {
