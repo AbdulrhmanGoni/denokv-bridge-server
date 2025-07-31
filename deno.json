@@ -14,7 +14,8 @@
   ],
   "publish": {
     "include": [
-      "src/"
+      "src/",
+      "README.md"
     ]
   },
   "license": "MIT"
