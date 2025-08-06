@@ -27,7 +27,7 @@ export function serializeKvKey(key: KvKey): SerializedKvKey {
         }
 
         if (typeof part === "bigint") {
-            return { type: "Bigint", value: part.toString() }
+            return { type: "BigInt", value: part.toString() }
         }
 
         if (typeof part === "number") {
@@ -65,7 +65,7 @@ export function deserializeKvKey(key: string, options?: { allowEmptyKey?: boolea
             return part;
         }
 
-        // Handle custom representation of Uint8Array, Infinity, NaN and Bigint
+        // Handle custom representation of Uint8Array, Infinity, NaN and BigInt
         if (typeof part === "object" && part !== null && typeof part.value === "string") {
             if (part.type === "Number") {
                 switch (part.value) {
@@ -84,11 +84,11 @@ export function deserializeKvKey(key: string, options?: { allowEmptyKey?: boolea
                 }
             }
 
-            if (part.type === "Bigint") {
+            if (part.type === "BigInt") {
                 try {
                     return BigInt(part.value)
                 } catch {
-                    throw new Error("Invalid Bigint value: " + part.value, errorCause);
+                    throw new Error("Invalid BigInt value: " + part.value, errorCause);
                 }
             }
         }
@@ -97,7 +97,7 @@ export function deserializeKvKey(key: string, options?: { allowEmptyKey?: boolea
             "Invalid JSON representation for a KvKey part.\n" +
             "KvKey part must be String, Number, Boolean, " +
             'Custom number wrapped as { type: "Number", value: ("NaN", "Infinity" or "-Infinity") }, ' +
-            'Bigint wrapped as { type: "Bigint", value: "..." }, ' +
+            'BigInt wrapped as { type: "BigInt", value: "..." }, ' +
             'or Uint8Array wrapped as { type: "Uint8Array", value: "..." }.',
             errorCause
         );
@@ -109,7 +109,7 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
         case "string": return { type: "String", data: value };
         case "number": return { type: "Number", data: value };
         case "boolean": return { type: "Boolean", data: value };
-        case "bigint": return { type: "Bigint", data: value.toString() };
+        case "bigint": return { type: "BigInt", data: value.toString() };
         case "undefined": return { type: "Undefined", data: "" };
     }
 
@@ -141,7 +141,7 @@ export function deserializeKvValue(body: any): unknown {
     }
 
     switch (body.type) {
-        case "Bigint": return BigInt(body.data);
+        case "BigInt": return BigInt(body.data);
         case "Uint8Array": return new Uint8Array(decodeBase64(body.data));
         case "RegExp": return new RegExp(body.data);
         case "Date": return new Date(body.data);
