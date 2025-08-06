@@ -132,33 +132,78 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
 
 // deno-lint-ignore no-explicit-any
 export function deserializeKvValue(body: any): unknown {
-    if (!Object.hasOwn(body, "type")) {
-        throw new Error("No data type provide for the value", errorCause);
+    if (!body?.type) {
+        throw new Error("No data type provided for the value", errorCause);
     }
 
-    if (!Object.hasOwn(body, "data")) {
-        throw new Error("No data provide for the value", errorCause);
+    if (!body?.data) {
+        throw new Error("No data provided for the value", errorCause);
     }
+
+    const evaluatedData = eval(`(${body.data})`)
 
     switch (body.type) {
-        case "BigInt": return BigInt(body.data);
-        case "Uint8Array": return new Uint8Array(decodeBase64(body.data));
-        case "RegExp": return new RegExp(body.data);
-        case "Date": return new Date(body.data);
-        case "Set": return eval(`new Set(${body.data})`);
-        case "Map": return eval(`new Map(${body.data})`);
+        case "Number": {
+            if (typeof evaluatedData === "number") { return evaluatedData }
+            throw new Error("Invalid Number received", errorCause);
+        }
+
+        case "String": {
+            if (typeof evaluatedData === "string") { return evaluatedData }
+            throw new Error("Invalid string received", errorCause);
+        }
+
+        case "BigInt": {
+            if (typeof evaluatedData === "bigint") { return evaluatedData }
+            throw new Error("Invalid BigInt received", errorCause);
+        }
+
+        case "Boolean": {
+            if (typeof evaluatedData === "boolean") { return evaluatedData }
+            throw new Error("Invalid boolean value received", errorCause);
+        }
+
+        case "Object": {
+            if (evaluatedData instanceof Object) { return evaluatedData }
+            throw new Error("Invalid Object received", errorCause);
+        }
+
+        case "Array": {
+            if (evaluatedData instanceof Array) { return evaluatedData }
+            throw new Error("Invalid Array received", errorCause);
+        }
+
+        case "Date": {
+            if (evaluatedData instanceof Date) { return evaluatedData }
+            throw new Error("Invalid Date received", errorCause);
+        }
+
+        case "Set": {
+            if (evaluatedData instanceof Set) { return evaluatedData }
+            throw new Error("Invalid Set received", errorCause);
+        }
+
+        case "Map": {
+            if (evaluatedData instanceof Map) { return evaluatedData }
+            throw new Error("Invalid Map received", errorCause);
+        }
+
+        case "RegExp": {
+            if (evaluatedData instanceof RegExp) { return evaluatedData }
+            throw new Error("Invalid RegExp received", errorCause);
+        }
+
+        case "Uint8Array": {
+            if (evaluatedData instanceof Uint8Array) { return evaluatedData }
+            throw new Error("Invalid Uint8Array received", errorCause);
+        }
+
         case "Undefined": return undefined;
+
         case "Null": return null;
+
         default:
-            if (["String", "Number", "Boolean"].includes(body.type)) {
-                return body.data
-            }
-
-            if (["Array", "Object"].includes(body.type)) {
-                return eval(`(${body.data})`)
-            }
-
-            throw new Error("Unsupported data type", errorCause);
+            throw new Error("Unsupported Data Type", errorCause);
     }
 }
 
@@ -171,3 +216,4 @@ export function serializeEntries(entries: KvEntry<unknown>[]): SerializedKvEntry
         }
     })
 }
+
