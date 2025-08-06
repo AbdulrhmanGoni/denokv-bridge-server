@@ -1,6 +1,6 @@
 {
   "name": "@denokv-gui-client/bridge-server",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "exports": "./src/index.ts",
   "imports": {
     "@deno/kv": "npm:@deno/kv@^0.10.0",
