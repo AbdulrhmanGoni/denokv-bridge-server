@@ -11,6 +11,7 @@ type CallBridgeServerParams = {
 
 type CallBridgeServerReturn<ResultT> = Promise<{
     result: ResultT | null;
+    cursor?: string;
     error: string | null;
 }>
 
@@ -39,6 +40,7 @@ async function callBridgeServerRequest<ResultT = unknown>(
         if (res.ok) {
             return {
                 result: json?.result,
+                cursor: res.headers.get("cursor") ?? "",
                 error: null,
             }
         }
