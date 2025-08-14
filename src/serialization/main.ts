@@ -1,4 +1,3 @@
-import { decodeBase64, encodeBase64 } from "@std/encoding/base64";
 import type { KvEntry, KvKey } from "@deno/kv";
 import serializeJs from "serialize-javascript";
 
@@ -23,7 +22,7 @@ const errorCause = { cause: "SerializationError" }
 export function serializeKvKey(key: KvKey): SerializedKvKey {
     return key.map((part) => {
         if (part instanceof Uint8Array) {
-            return { type: "Uint8Array", value: encodeBase64(part) }
+            return { type: "Uint8Array", value: serializeUint8Array(part) }
         }
 
         if (typeof part === "bigint") {
@@ -77,10 +76,16 @@ export function deserializeKvKey(key: string, options?: { allowEmptyKey?: boolea
             }
 
             if (part.type === "Uint8Array") {
+                const error = new Error("Invalid Uint8Array value: " + part.value, errorCause)
                 try {
-                    return decodeBase64(part.value);
+                    const uint8Array = eval(`(${part.value})`);
+                    if (uint8Array instanceof Uint8Array) {
+                        return uint8Array
+                    } else {
+                        throw error
+                    }
                 } catch {
-                    throw new Error("Invalid base64 encoding for Uint8Array: " + part.value, errorCause);
+                    throw error
                 }
             }
 
@@ -98,7 +103,7 @@ export function deserializeKvKey(key: string, options?: { allowEmptyKey?: boolea
             "KvKey part must be String, Number, Boolean, " +
             'Custom number wrapped as { type: "Number", value: ("NaN", "Infinity" or "-Infinity") }, ' +
             'BigInt wrapped as { type: "BigInt", value: "..." }, ' +
-            'or Uint8Array wrapped as { type: "Uint8Array", value: "..." }.',
+            'or Uint8Array wrapped as { type: "Uint8Array", value: "new Uint8Array(...)" }.',
             errorCause
         );
     });
@@ -123,7 +128,7 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
 
     if (value instanceof RegExp) return { type: "RegExp", data: value.toString() }
 
-    if (value instanceof Uint8Array) return { type: "Uint8Array", data: encodeBase64(value) }
+    if (value instanceof Uint8Array) return { type: "Uint8Array", data: serializeUint8Array(value) }
 
     if (value === null) return { type: "Null", data: "" }
 
@@ -217,3 +222,6 @@ export function serializeEntries(entries: KvEntry<unknown>[]): SerializedKvEntry
     })
 }
 
+function serializeUint8Array(uint8Array: Uint8Array) {
+    return `new Uint8Array(${JSON.stringify(Array.from(uint8Array))})`
+}
