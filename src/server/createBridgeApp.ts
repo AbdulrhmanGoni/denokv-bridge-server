@@ -32,7 +32,11 @@ export function createBridgeApp(kv: Kv | Deno.Kv): Hono<BlankEnv, BlankSchema, "
             records.push(record as KvEntry<unknown>)
         }
 
-        return c.json({ result: serializeEntries(records) }, 200, { cursor: iterator.cursor })
+        return c.json(
+            { result: serializeEntries(records) },
+            200,
+            { cursor: records.length ? iterator.cursor : "" }
+        )
     });
 
     app.get("/get/:key", async (c) => {
