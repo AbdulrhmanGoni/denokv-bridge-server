@@ -1,0 +1,53 @@
+import { describe, it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
+import { validateSetRequestParams } from "../../src/index.ts";
+
+describe("Test 'validateBrowseRequestParams' function", () => {
+  const fakeUrl = "http://localhost:8000"
+
+  it("should parse a URL with a key", () => {
+    const key =
+      '["users", 6, { "type": "BigInt", "value": "12345678901234567890" }, { "type": "Number", "value": "Infinity" }]'
+
+    const url = new URL(fakeUrl + '/set?key=' + key);
+    const expected = {
+      key: ["users", 6, 12345678901234567890n, Infinity]
+    };
+    expect(validateSetRequestParams(url)).toEqual(expected);
+  });
+
+  it("should parse a URL with a key and a valid expiration time", () => {
+    const futureTimestamp = new Date().getTime() + 10000;
+    const url = new URL(
+      `${fakeUrl}/set?key=["users", 6]&expires=${futureTimestamp}`,
+    );
+    const expected = { key: ["users", 6], expires: futureTimestamp };
+    expect(validateSetRequestParams(url)).toEqual(expected);
+  });
+
+  it("should throw an error for missing key", () => {
+    const url = new URL(fakeUrl + "/set");
+    expect(() => validateSetRequestParams(url)).toThrow(
+      "No target key to set.",
+    );
+  });
+
+  it("should throw an error for an invalid expiration time (passed time)", () => {
+    const pastTimestamp = new Date().getTime() - 10000;
+    const url = new URL(
+      `${fakeUrl}/set?key=["users", "dave"]&expires=${pastTimestamp}`,
+    );
+    expect(() => validateSetRequestParams(url)).toThrow(
+      "Invalid expiration time option: It must be a timestamp number in the future. Got: ",
+    );
+  });
+
+  it("should throw an error for a non-numeric expiration time", () => {
+    const url = new URL(
+      fakeUrl + '/set?key=["users", "dave"]&expires=not-a-number',
+    );
+    expect(() => validateSetRequestParams(url)).toThrow(
+      "Invalid expiration time option: It must be a timestamp number. Got: not-a-number",
+    );
+  });
+});

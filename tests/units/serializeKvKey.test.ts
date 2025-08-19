@@ -2,7 +2,7 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { serializeKvKey } from "../../src/index.ts";
 
-describe("serializeKvKey", () => {
+describe("Test serializeKvKey function", () => {
   it("should serialize a key with all expected primitive values", () => {
     const key = ["posts", 123, true];
     const expected = ["posts", 123, true];
