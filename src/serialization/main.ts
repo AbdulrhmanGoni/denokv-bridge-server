@@ -1,5 +1,10 @@
 import type { KvEntry, KvKey } from "@deno/kv";
-import serializeJs from "serialize-javascript";
+import sJs from "serialize-javascript";
+
+// deno-lint-ignore no-explicit-any
+function serializeJs(jsValue: any) {
+    return sJs(jsValue, { ignoreFunction: true, isJSON: true })
+}
 
 export type SerializedKvKey = (string | number | boolean | {
     type: string;
