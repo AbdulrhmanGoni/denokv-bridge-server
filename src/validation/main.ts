@@ -49,16 +49,9 @@ export function validateSetRequestParams(url: URL): ValidateSetRequestParams {
     const expiresOption = url.searchParams.get("expires");
 
     const expires = expiresOption ? Number(expiresOption) : undefined;
-    if (expiresOption && isNaN(expires!)) {
+    if (expires && isNaN(expires)) {
         throw new Error(
-            `Invalid expiration time option: It must be a timestamp number. Got: ${expiresOption}`,
-            errorCause
-        );
-    }
-
-    if (expires && expires < new Date().getTime()) {
-        throw new Error(
-            `Invalid expiration time option: It must be a timestamp number in the future. Got: ${expires}`,
+            `Invalid expiration time option: It must be a number in milliseconds. Got: ${expiresOption}`,
             errorCause
         );
     }
