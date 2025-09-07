@@ -3,7 +3,7 @@ import sJs from "serialize-javascript";
 
 // deno-lint-ignore no-explicit-any
 function serializeJs(jsValue: any) {
-    return sJs(jsValue, { ignoreFunction: true, isJSON: true })
+    return sJs(jsValue, { ignoreFunction: true })
 }
 
 export type SerializedKvKey = (string | number | boolean | {
