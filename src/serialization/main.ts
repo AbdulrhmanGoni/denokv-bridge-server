@@ -120,7 +120,7 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
         case "number": return { type: "Number", data: value };
         case "boolean": return { type: "Boolean", data: value };
         case "bigint": return { type: "BigInt", data: value.toString() };
-        case "undefined": return { type: "Undefined", data: "" };
+        case "undefined": return { type: "Undefined", data: "undefined" };
     }
 
     if (value instanceof Array) return { type: "Array", data: serializeJs(value) }
@@ -135,7 +135,7 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
 
     if (value instanceof Uint8Array) return { type: "Uint8Array", data: serializeUint8Array(value) }
 
-    if (value === null) return { type: "Null", data: "" }
+    if (value === null) return { type: "Null", data: "null" }
 
     return { type: "Object", data: serializeJs(value) };
 }
