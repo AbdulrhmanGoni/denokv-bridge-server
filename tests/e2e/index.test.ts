@@ -3,6 +3,8 @@ import { openBridgeServerInDeno } from "../../src/server/main.ts";
 import { fakeData } from "../fakeTestData.ts";
 import { BridgeServerClient } from "../../src/server/bridgeServerClient.ts";
 import { browseEndpointSpec } from "./browse.spec.ts";
+import { setEndpointSpec } from "./set.spec.ts";
+import { getEndpointSpec } from "./get.spec.ts";
 
 export type TestDependencies = {
   kv: Deno.Kv;
@@ -23,4 +25,6 @@ const testsDependencies = {
 
 describe("End-to-End tests for Deno server", () => {
   browseEndpointSpec(testsDependencies);
+  setEndpointSpec(testsDependencies);
+  getEndpointSpec(testsDependencies);
 });
