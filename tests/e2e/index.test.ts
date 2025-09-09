@@ -5,6 +5,7 @@ import { BridgeServerClient } from "../../src/server/bridgeServerClient.ts";
 import { browseEndpointSpec } from "./browse.spec.ts";
 import { setEndpointSpec } from "./set.spec.ts";
 import { getEndpointSpec } from "./get.spec.ts";
+import { deleteEndpointSpec } from "./delete.spec.ts";
 
 export type TestDependencies = {
   kv: Deno.Kv;
@@ -27,4 +28,5 @@ describe("End-to-End tests for Deno server", () => {
   browseEndpointSpec(testsDependencies);
   setEndpointSpec(testsDependencies);
   getEndpointSpec(testsDependencies);
+  deleteEndpointSpec(testsDependencies);
 });
