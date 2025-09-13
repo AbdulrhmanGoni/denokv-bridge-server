@@ -3,6 +3,10 @@
 This package is a tiny web server provides a JSON-based API to access the Deno KV Database
 from places like frontend web or mobile apps where using the Deno KV client directly (`Deno.openKv()` or `openKv()` in node) is not possible.
 
+> [!NOTE]
+> This package is mainly created to be used inside [Deno Kv GUI Client](https://abdulrhmangoni.github.io/denokv-gui-client/) desktop app 
+> or to be used as a bridge server between ***Deno Kv GUI Client*** app and a Deno Kv database that is existing in a place where ***Deno Kv GUI Client*** cant reach (e.g., Inside a docker container or In Memory database inside another process)
+
 ## Usage
 
 You just need to add `@denokv-gui-client/bridge-server` package to your project, import and
