@@ -12,6 +12,32 @@ import type { Kv, KvEntry, KvListSelector } from "@deno/kv";
 import { Hono } from 'hono/tiny';
 import type { BlankEnv, BlankSchema } from "hono/types";
 
+/**
+ * Creates the bridge server which is a Hono web application that provides HTTP endpoints to interact with
+ * a given Deno KV database.
+ * 
+ * @param kv An instance of the official Deno.Kv API class or compatible KV implementation
+ * @returns An instance of the `Hono` class which represents the entry point of the bridge server
+ *
+ * @example
+ * ```typescript
+ * const kv = await Deno.openKv();
+ * const app = createBridgeApp(kv);
+ * 
+ * // Start a server
+ * Deno.serve({ port: 8000 }, app.fetch);
+ * ```
+ *
+ * @remarks
+ * The bridge server provides the following endpoints:
+ * - `GET /browse` - List KV entries (mirroring 'Deno.Kv.list()')
+ * - `GET /get/:key` - Retrieve a specific KV entry by key (mirroring `Deno.Kv.get()`)
+ * - `PUT /set` - Create or update a KV entry (mirroring `Deno.Kv.set()`)
+ * - `DELETE /delete` - Remove a KV entry (mirroring `Deno.Kv.delete()`)
+ * - `GET /check` - Health check endpoint to verify KV connectivity
+ *
+ * All endpoints include CORS headers allowing cross-origin requests from any domain.
+ */
 export function createBridgeApp(kv: Kv | Deno.Kv): Hono<BlankEnv, BlankSchema, "/"> {
     const app = new Hono()
 

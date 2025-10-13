@@ -24,6 +24,17 @@ export type SerializedKvEntry = {
 
 const errorCause = { cause: "SerializationError" }
 
+/**
+ * Serialize a Deno Kv Key into a JSON-compatible array.
+ *
+ * Each key part is preserved if it is a primitive. Special values are wrapped:
+ * - `Uint8Array` -> `{ type: "Uint8Array", value: "new Uint8Array([...])" }`
+ * - `BigInt` -> `{ type: "BigInt", value: "..." }`
+ * - non-finite numbers (`NaN`, `Infinity`, `-Infinity`) -> `{ type: "Number", value: "..." }`
+ *
+ * @param key Deno Kv Key to serialize
+ * @returns A JSON-compatible representation of the Deno KV key
+ */
 export function serializeKvKey(key: KvKey): SerializedKvKey {
     return key.map((part) => {
         if (part instanceof Uint8Array) {
@@ -44,6 +55,15 @@ export function serializeKvKey(key: KvKey): SerializedKvKey {
     })
 }
 
+/**
+ * Deserialize a JSON string into a Deno Kv Key.
+ *
+ * Throws an Error with cause "SerializationError" when the input is invalid.
+ *
+ * @param key JSON string representing a serialized Deno Kv Key
+ * @param options Optional flags, e.g. `allowEmptyKey` to not throw an error for empty keys
+ * @returns A Deno Kv Key that can be used with Deno KV APIs
+ */
 export function deserializeKvKey(key: string, options?: { allowEmptyKey?: boolean }): KvKey {
     let parsed: unknown;
     try {
@@ -114,6 +134,12 @@ export function deserializeKvKey(key: string, options?: { allowEmptyKey?: boolea
     });
 }
 
+/**
+ * Serializes a Deno Kv value into a JSON-compatible object.
+ *
+ * @param value any valid Deno Kv value to serialize
+ * @returns A `{ type, data }` JSON object
+ */
 export function serializeKvValue(value: unknown): SerializedKvValue {
     switch (typeof value) {
         case "string": return { type: "String", data: value };
@@ -140,8 +166,15 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
     return { type: "Object", data: serializeJs(value) };
 }
 
-// deno-lint-ignore no-explicit-any
-export function deserializeKvValue(body: any): unknown {
+/**
+ * Deserializes back a Kv Entry value serialized using `serializeKvValue` function
+ *
+ * Throws an Error with cause "SerializationError" when the type/data are invalid.
+ *
+ * @param body The serialized Kv Entry value using `serializeKvValue` function
+ * @returns The deserialized Kv Entry value which can be added into Deno KV Databases
+ */
+export function deserializeKvValue(body: Partial<SerializedKvValue>): unknown {
     if (!body?.type) {
         throw new Error("No data type provided for the value", errorCause);
     }
@@ -217,6 +250,12 @@ export function deserializeKvValue(body: any): unknown {
     }
 }
 
+/**
+ * Serializes an array of Deno KV entries to a JSON-compatible array.
+ *
+ * @param entries Array of Deno KV entries
+ * @returns Array of serialized Deno KV entries
+ */
 export function serializeEntries(entries: KvEntry<unknown>[]): SerializedKvEntry[] {
     return entries.map<SerializedKvEntry>((entry) => {
         return {

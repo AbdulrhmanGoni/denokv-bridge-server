@@ -10,6 +10,18 @@ type ValidateBrowseRequestParams = {
     end?: KvKey;
     cursor?: string;
 }
+/**
+ * Parse and validate query parameters of `/browse` endpoint.
+ *
+ * - `prefix`, `start`, and `end` parameters which will be parsed using `deserializeKvKey`.
+ * - `limit` optional parameter must be a positive integer when provided.
+ * - `cursor` is passed through as-is when present.
+ *
+ * Throws an Error with cause "ValidationError" on invalid inputs.
+ *
+ * @param url URL containing the query parameters to validate
+ * @returns An object containing the validated query parameters
+ */
 export function validateBrowseRequestParams(url: URL): ValidateBrowseRequestParams {
     const limitOption = url.searchParams.get("limit")?.toString();
     let limit: number | undefined = undefined;
@@ -38,6 +50,17 @@ type ValidateSetRequestParams = {
     key: KvKey;
     expires?: number;
 }
+/**
+ * Parse and validate query parameters of `/set` endpoint which are:
+ *
+ * - `key`: required parameter (will be parsed using `deserializeKvKey`)
+ * - `expires`: optional parameter which must be a number in milliseconds when provided.
+ *
+ * Throws an Error with cause "ValidationError" on invalid inputs.
+ *
+ * @param url URL containing the query parameters validate
+ * @returns An object containing the validated key and optional expiration
+ */
 export function validateSetRequestParams(url: URL): ValidateSetRequestParams {
     const targetKey = url.searchParams.get("key")
     const key = targetKey ? deserializeKvKey(targetKey) : undefined;
