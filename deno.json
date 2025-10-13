@@ -6,7 +6,7 @@
   },
   "exports": "./src/index.ts",
   "imports": {
-    "@deno/kv": "npm:@deno/kv@^0.10.0",
+    "@deno/kv": "npm:@deno/kv@^0.12.0",
     "@hono/node-server": "npm:@hono/node-server@^1.17.1",
     "@std/expect": "jsr:@std/expect",
     "@std/testing/bdd": "jsr:@std/testing/bdd",
