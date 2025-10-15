@@ -1,13 +1,11 @@
-import type { KvKey } from "@deno/kv";
+import type { KvKey, KvListSelector } from "@deno/kv";
 import { deserializeKvKey } from "../serialization/main.ts";
 
 const errorCause = { cause: "ValidationError" }
 
-type ValidateBrowseRequestParams = {
+type ValidBrowseRequestParams = {
     limit?: number;
-    prefix?: KvKey;
-    start?: KvKey;
-    end?: KvKey;
+    listSelector: KvListSelector;
     cursor?: string;
 }
 /**
@@ -22,7 +20,7 @@ type ValidateBrowseRequestParams = {
  * @param url URL containing the query parameters to validate
  * @returns An object containing the validated query parameters
  */
-export function validateBrowseRequestParams(url: URL): ValidateBrowseRequestParams {
+export function validateBrowseRequestParams(url: URL): ValidBrowseRequestParams {
     const limitOption = url.searchParams.get("limit")?.toString();
     let limit: number | undefined = undefined;
     if (limitOption) {
@@ -34,16 +32,35 @@ export function validateBrowseRequestParams(url: URL): ValidateBrowseRequestPara
 
     const cursor = url.searchParams.get("cursor") ?? undefined;
 
+    const listSelector = {} as KvListSelector
+
     const prefixOption = url.searchParams.get("prefix")
     const prefix = prefixOption ? deserializeKvKey(prefixOption, { allowEmptyKey: true }) : undefined;
+    if (prefix) {
+        Object.assign(listSelector, { prefix })
+    }
 
     const startOption = url.searchParams.get("start")
     const start = startOption ? deserializeKvKey(startOption) : undefined;
+    if (start) {
+        Object.assign(listSelector, { start })
+    }
 
     const endOption = url.searchParams.get("end")
     const end = endOption ? deserializeKvKey(endOption) : undefined;
+    if (end) {
+        Object.assign(listSelector, { end })
+    }
 
-    return { limit, prefix, start, end, cursor };
+    if (Object.keys(listSelector).length == 0) {
+        Object.assign(listSelector, { prefix: [] })
+    }
+
+    return {
+        limit,
+        listSelector,
+        cursor,
+    };
 }
 
 type ValidateSetRequestParams = {

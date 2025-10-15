@@ -8,7 +8,7 @@ import {
     validateBrowseRequestParams,
     validateSetRequestParams,
 } from "../validation/main.ts";
-import type { Kv, KvEntry, KvListSelector } from "@deno/kv";
+import type { Kv, KvEntry } from "@deno/kv";
 import { Hono } from 'hono/tiny';
 import type { BlankEnv, BlankSchema } from "hono/types";
 
@@ -47,13 +47,10 @@ export function createBridgeApp(kv: Kv | Deno.Kv): Hono<BlankEnv, BlankSchema, "
     })
 
     app.get("/browse", async (c) => {
-        const { limit, prefix, start, end, cursor } = validateBrowseRequestParams(new URL(c.req.url))
+        const { limit, listSelector, cursor } = validateBrowseRequestParams(new URL(c.req.url))
         const defaultLimit = 40;
-        const noParams = (!start && !end && !prefix)
-        const listOptions = noParams ? { prefix: [] } : ({ prefix, start, end }) as KvListSelector
 
-        const iterator = kv.list(listOptions, { cursor, limit: limit ?? defaultLimit });
-
+        const iterator = kv.list(listSelector, { cursor, limit: limit ?? defaultLimit });
         const records: KvEntry<unknown>[] = []
         for await (const record of iterator) {
             records.push(record as KvEntry<unknown>)
