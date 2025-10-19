@@ -1,6 +1,6 @@
 {
   "name": "@denokv-gui-client/bridge-server",
-  "version": "2.2.9",
+  "version": "2.2.10",
   "tasks": {
     "test": "deno test -N -R --allow-ffi --allow-sys tests/units tests/e2e/index.test.ts"
   },

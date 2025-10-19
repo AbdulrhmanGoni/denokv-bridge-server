@@ -1,5 +1,7 @@
 import type { SerializedKvEntry, SerializedKvKey, SerializedKvValue } from "../serialization/main.ts";
 
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+
 type CallBridgeServerOptions = Record<string, SerializedKvKey | number | string>
 
 type CallBridgeServerParams = {
@@ -11,7 +13,7 @@ type CallBridgeServerParams = {
 
 type CallBridgeServerReturn<ResultT> = Promise<{
     result: ResultT | null;
-    cursor?: string;
+    cursor: string;
     error: string | null;
 }>
 
@@ -35,23 +37,24 @@ async function callBridgeServerRequest<ResultT = unknown>(
         }
     );
 
+    const returnValue: UnwrapPromise<CallBridgeServerReturn<ResultT>> = {
+        result: null,
+        error: null,
+        cursor: res.headers.get("cursor") ?? "",
+    }
+
     try {
         const json = await res.json()
         if (res.ok) {
-            return {
-                result: json?.result,
-                cursor: res.headers.get("cursor") ?? "",
-                error: null,
-            }
-        }
-
-        return {
-            error: json?.error || "Unexpected Error",
-            result: null,
+            returnValue.result = json?.result
+        } else {
+            returnValue.error = json?.error || "Unexpected error from the server"
         }
     } catch {
-        return { error: "Invalid JSON response received", result: null }
+        returnValue.error = "Invalid JSON response received"
     }
+
+    return returnValue
 };
 
 export type BrowsingOptions = {
@@ -102,5 +105,20 @@ export class BridgeServerClient {
             options: { key },
             method: "DELETE"
         })
+    }
+
+    async watch(key: SerializedKvKey, onChange: (updatedEntry: SerializedKvEntry) => void) {
+        try {
+            const response = await fetch(`${this.baseUrl}/watch?key=${JSON.stringify(key)}`)
+            if (!response.body) {
+                throw "No response body (stream) found."
+            }
+            const decoder = new TextDecoder();
+            for await (const chunk of response.body) {
+                onChange(JSON.parse(decoder.decode(chunk)));
+            }
+        } catch (err) {
+            throw "Error fetching or reading stream:" + err
+        }
     }
 }
