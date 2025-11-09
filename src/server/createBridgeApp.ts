@@ -57,9 +57,13 @@ export function createBridgeApp(kv: Kv | Deno.Kv): Hono<BlankEnv, BlankSchema, "
         }
 
         return c.json(
-            { result: serializeEntries(records) },
-            200,
-            { cursor: records.length ? iterator.cursor : "" }
+            {
+                result: {
+                    entries: serializeEntries(records),
+                    cursor: records.length ? iterator.cursor : ""
+                }
+            },
+            200
         )
     });
 

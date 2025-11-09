@@ -7,9 +7,9 @@ export function browseEndpointSpec({ bridgeServerClient }: TestDependencies) {
   describe("'GET /browse' endpoint's specifications", () => {
     it("should return available all entries", async () => {
       const res = await bridgeServerClient.browse();
-      expect(res.result).toBeInstanceOf(Array);
-      expect(res.result?.length).toBe(fakeData.length);
-      expect(res.result?.[0]).toMatchObject({
+      expect(res.result?.entries).toBeInstanceOf(Array);
+      expect(res.result?.entries.length).toBe(fakeData.length);
+      expect(res.result?.entries[0]).toMatchObject({
         key: expect.any(Array),
         value: expect.anything(),
         versionstamp: expect.any(String),
@@ -22,9 +22,9 @@ export function browseEndpointSpec({ bridgeServerClient }: TestDependencies) {
       };
 
       const res = await bridgeServerClient.browse(options);
-      expect(res.result).toBeInstanceOf(Array);
-      expect(res.result?.length).toBe(options.limit);
-      expect(res.result?.[0]).toMatchObject({
+      expect(res.result?.entries).toBeInstanceOf(Array);
+      expect(res.result?.entries.length).toBe(options.limit);
+      expect(res.result?.entries[0]).toMatchObject({
         key: expect.any(Array),
         value: expect.anything(),
         versionstamp: expect.any(String),
@@ -37,8 +37,8 @@ export function browseEndpointSpec({ bridgeServerClient }: TestDependencies) {
       };
 
       const res = await bridgeServerClient.browse(options);
-      expect(res.result).toBeInstanceOf(Array);
-      res.result?.forEach((entry) => {
+      expect(res.result?.entries).toBeInstanceOf(Array);
+      res.result?.entries.forEach((entry) => {
         expect(entry.key[0]).toBe(options.prefix[0]);
       })
     });

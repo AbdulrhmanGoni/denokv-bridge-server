@@ -76,11 +76,16 @@ export type SetKeyOptions = {
     expires?: number;
 }
 
+export type BrowseReturn = {
+    entries: SerializedKvEntry[];
+    cursor: string;
+}
+
 export class BridgeServerClient {
     constructor(private baseUrl: string) { }
 
-    browse(options?: BrowsingOptions): CallBridgeServerReturn<SerializedKvEntry[]> {
-        return callBridgeServerRequest<SerializedKvEntry[]>({
+    browse(options?: BrowsingOptions): CallBridgeServerReturn<BrowseReturn> {
+        return callBridgeServerRequest<BrowseReturn>({
             url: `${this.baseUrl}/browse`,
             options,
             method: "GET"
