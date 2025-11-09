@@ -29,18 +29,25 @@ function optionsToUrlSearchParams(options: CallBridgeServerOptions): URLSearchPa
 async function callBridgeServerRequest<ResultT = unknown>(
     { url, method, body, options }: CallBridgeServerParams
 ): CallBridgeServerReturn<ResultT> {
-    const res = await fetch(
-        url + (options ? "?" + optionsToUrlSearchParams(options).toString() : ""),
-        {
-            method: method ?? "GET",
-            body: JSON.stringify(body),
-        }
-    );
-
+    let res: Response;
     const returnValue: UnwrapPromise<CallBridgeServerReturn<ResultT>> = {
         result: null,
         error: null,
-        cursor: res.headers.get("cursor") ?? "",
+        cursor: ""
+    }
+
+    try {
+        res = await fetch(
+            url + (options ? "?" + optionsToUrlSearchParams(options).toString() : ""),
+            {
+                method: method ?? "GET",
+                body: JSON.stringify(body),
+            }
+        );
+        returnValue.cursor = res.headers.get("cursor") ?? ""
+    } catch {
+        returnValue.error = "Something went wrong!. It might be network issue or the bridge server is down"
+        return returnValue
     }
 
     try {
