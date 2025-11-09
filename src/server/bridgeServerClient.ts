@@ -13,7 +13,6 @@ type CallBridgeServerParams = {
 
 type CallBridgeServerReturn<ResultT> = Promise<{
     result: ResultT | null;
-    cursor: string;
     error: string | null;
 }>
 
@@ -33,7 +32,6 @@ async function callBridgeServerRequest<ResultT = unknown>(
     const returnValue: UnwrapPromise<CallBridgeServerReturn<ResultT>> = {
         result: null,
         error: null,
-        cursor: ""
     }
 
     try {
@@ -44,7 +42,6 @@ async function callBridgeServerRequest<ResultT = unknown>(
                 body: JSON.stringify(body),
             }
         );
-        returnValue.cursor = res.headers.get("cursor") ?? ""
     } catch {
         returnValue.error = "Something went wrong!. It might be network issue or the bridge server is down"
         return returnValue
