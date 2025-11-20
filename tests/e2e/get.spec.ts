@@ -20,6 +20,7 @@ export function getEndpointSpec({ bridgeServerClient }: TestDependencies) {
             const arbitraryKey = [34, true, false]
             const getRes = await bridgeServerClient.get(arbitraryKey);
             expect(getRes.result).toBe(null);
+            expect(getRes.error).toMatch(/not found/g);
         });
     });
 }
