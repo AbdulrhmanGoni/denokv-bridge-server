@@ -74,7 +74,7 @@ export function createBridgeApp(kv: Kv | Deno.Kv): Hono<BlankEnv, BlankSchema, "
         const entry = await kv.get(key)
 
         if (entry.value === null && entry.versionstamp === null) {
-            return c.json({ result: null }, 404)
+            return c.json({ error: "Entry not found" }, 404)
         } else {
             return c.json({
                 result: {
