@@ -103,7 +103,7 @@ export class BridgeServerClient {
 
     get(key: SerializedKvKey): CallBridgeServerReturn<SerializedKvEntry> {
         return callBridgeServerRequest<SerializedKvEntry>({
-            url: `${this.baseUrl}/get/${JSON.stringify(key)}`,
+            url: `${this.baseUrl}/get/${encodeURIComponent(JSON.stringify(key))}`,
             method: "GET"
         })
     }
