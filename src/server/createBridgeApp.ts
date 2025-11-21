@@ -116,6 +116,10 @@ export function createBridgeApp(kv: Kv | Deno.Kv): Hono<BlankEnv, BlankSchema, "
         return c.json({ result: true })
     });
 
+    app.all("*", (c) => {
+        return c.json({ error: `'${c.req.method} ${c.req.path}' route dosen't exist` }, 404)
+    });
+
     app.onError((err, c) => {
         return c.json({ error: (err.cause ? err.cause + ": " : "") + err.message }, err.cause ? 400 : 500)
     })
