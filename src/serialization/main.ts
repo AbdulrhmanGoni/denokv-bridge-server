@@ -197,7 +197,7 @@ export function deserializeKvValue(body: Partial<SerializedKvValue>): unknown {
         }
 
         case "BigInt": {
-            if (typeof evaluatedData === "bigint") { return evaluatedData }
+            if (typeof evaluatedData == "number") { return BigInt(evaluatedData) }
             throw new Error("Invalid BigInt received", errorCause);
         }
 
