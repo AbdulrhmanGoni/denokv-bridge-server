@@ -4,7 +4,7 @@ import type { TestDependencies } from "./index.test.ts";
 import { fakeData } from "../fakeTestData.ts";
 import { serializeKvKey } from "../../src/serialization/main.ts";
 
-export function getEndpointSpec({ bridgeServerClient }: TestDependencies) {
+export function getEndpointSpec({ bridgeServerClient, kv }: TestDependencies) {
     describe("'GET /get/:key' endpoint's specifications", () => {
         it("should retrieve an existing kv entry successfully", async () => {
             const existingKey = serializeKvKey(fakeData[0].key);
@@ -21,6 +21,15 @@ export function getEndpointSpec({ bridgeServerClient }: TestDependencies) {
             const getRes = await bridgeServerClient.get(arbitraryKey);
             expect(getRes.result).toBe(null);
             expect(getRes.error).toMatch(/not found/g);
+        });
+
+        it("should not fail because of the slashes in a key part", async () => {
+            const keyWithSlashes = ["/with/slashes"]
+            const data = "slash!"
+            await kv.set(keyWithSlashes, data)
+            const getRes = await bridgeServerClient.get(keyWithSlashes);
+            expect(getRes.result?.value.type).toBe("String");
+            expect(getRes.result?.value.data).toBe(data);
         });
     });
 }
