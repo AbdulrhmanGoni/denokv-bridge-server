@@ -155,7 +155,7 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
             if (/^_?KvU64$/.test(Object.getPrototypeOf(value).constructor.name)) {
                 return {
                     type: "KvU64",
-                    data: String(value)
+                    data: String((value as { value: bigint }).value)
                 };
             }
         }
