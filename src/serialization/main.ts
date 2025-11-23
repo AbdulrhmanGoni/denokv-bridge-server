@@ -1,4 +1,4 @@
-import type { KvEntry, KvKey } from "@deno/kv";
+import type { Kv, KvEntry, KvKey } from "@deno/kv";
 import sJs from "serialize-javascript";
 
 // deno-lint-ignore no-explicit-any
@@ -147,6 +147,18 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
         case "boolean": return { type: "Boolean", data: value };
         case "bigint": return { type: "BigInt", data: value.toString() };
         case "undefined": return { type: "Undefined", data: "undefined" };
+        case "object": {
+            if (value == null) {
+                return { type: "Null", data: "null" }
+            }
+
+            if (/^_?KvU64$/.test(Object.getPrototypeOf(value).constructor.name)) {
+                return {
+                    type: "KvU64",
+                    data: String(value)
+                };
+            }
+        }
     }
 
     if (value instanceof Array) return { type: "Array", data: serializeJs(value) }
@@ -161,8 +173,6 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
 
     if (value instanceof Uint8Array) return { type: "Uint8Array", data: serializeUint8Array(value) }
 
-    if (value === null) return { type: "Null", data: "null" }
-
     return { type: "Object", data: serializeJs(value) };
 }
 
@@ -174,7 +184,7 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
  * @param body The serialized Kv Entry value using `serializeKvValue` function
  * @returns The deserialized Kv Entry value which can be added into Deno KV Databases
  */
-export function deserializeKvValue(body: Partial<SerializedKvValue>): unknown {
+export async function deserializeKvValue(body: Partial<SerializedKvValue>, kv: Kv | Deno.Kv): Promise<unknown> {
     if (!body?.type) {
         throw new Error("No data type provided for the value", errorCause);
     }
@@ -209,6 +219,30 @@ export function deserializeKvValue(body: Partial<SerializedKvValue>): unknown {
         case "Object": {
             if (evaluatedData instanceof Object) { return evaluatedData }
             throw new Error("Invalid Object received", errorCause);
+        }
+
+        case "KvU64": {
+            if (typeof evaluatedData == "number") {
+                let errorMessage = ""
+                try {
+                    const randomKey = ["random", crypto.randomUUID()]
+                    const result = await kv.atomic().sum(randomKey, BigInt(evaluatedData)).commit()
+                    if (result.ok) {
+                        const u64Value = (await kv.get(randomKey)).value
+                        kv.delete(randomKey)
+                        return u64Value;
+                    }
+                } catch (error) {
+                    errorMessage = (error as Error).message
+                }
+
+                throw new Error(
+                    "Couldn't construct KvU64 value" + (errorMessage ? `: ${errorMessage}` : ""),
+                    errorCause
+                );
+            }
+
+            throw new Error("Invalid KvU64 number received", errorCause);
         }
 
         case "Array": {

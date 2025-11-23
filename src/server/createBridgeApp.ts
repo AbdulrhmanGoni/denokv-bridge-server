@@ -89,7 +89,7 @@ export function createBridgeApp(kv: Kv | Deno.Kv): Hono<BlankEnv, BlankSchema, "
     app.put("/set", async (c) => {
         const { key, expires } = validateSetRequestParams(new URL(c.req.url))
 
-        const validValue = await deserializeKvValue(await c.req.json())
+        const validValue = await deserializeKvValue(await c.req.json(), kv)
 
         await kv.set(key, validValue, { expireIn: expires })
 
