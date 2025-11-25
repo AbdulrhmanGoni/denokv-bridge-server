@@ -163,7 +163,7 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
 
     if (value instanceof Array) return { type: "Array", data: serializeJs(value) }
 
-    if (value instanceof Date) return { type: "Date", data: `new Date('${value.toISOString()}')` }
+    if (value instanceof Date) return { type: "Date", data: value.toISOString() }
 
     if (value instanceof Map) return { type: "Map", data: serializeJs(value) }
 
