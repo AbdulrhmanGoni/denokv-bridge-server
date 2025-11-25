@@ -169,7 +169,12 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
 
     if (value instanceof Set) return { type: "Set", data: serializeJs(value) }
 
-    if (value instanceof RegExp) return { type: "RegExp", data: value.toString() }
+    if (value instanceof RegExp) {
+        return {
+            type: "RegExp",
+            data: JSON.stringify({ source: value.source, flags: value.flags }),
+        }
+    }
 
     if (value instanceof Uint8Array) return { type: "Uint8Array", data: serializeUint8Array(value) }
 
