@@ -273,6 +273,14 @@ export async function deserializeKvValue(body: Partial<SerializedKvValue>, kv: K
             throw new Error("Invalid KvU64 number received", errorCause);
         }
 
+        case "Date": {
+            if (typeof body.data == "number" || typeof body.data == "string") {
+                const date = new Date(body.data)
+                if (String(date) != "Invalid Date") return date
+            }
+            throw new Error("Invalid Date received", errorCause);
+        }
+
         case "Undefined": return undefined;
 
         case "Null": return null;
@@ -289,11 +297,6 @@ export async function deserializeKvValue(body: Partial<SerializedKvValue>, kv: K
         case "Array": {
             if (evaluatedData instanceof Array) return evaluatedData
             throw new Error("Invalid Array received", errorCause);
-        }
-
-        case "Date": {
-            if (evaluatedData instanceof Date) { return evaluatedData }
-            throw new Error("Invalid Date received", errorCause);
         }
 
         case "Set": {
