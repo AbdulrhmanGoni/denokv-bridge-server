@@ -148,7 +148,7 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
         case "bigint": return { type: "BigInt", data: value.toString() };
         case "undefined": return { type: "Undefined", data: "undefined" };
         case "object": {
-            if (value == null) {
+            if (value === null) {
                 return { type: "Null", data: "null" }
             }
 
