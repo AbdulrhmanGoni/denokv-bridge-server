@@ -181,6 +181,15 @@ export function serializeKvValue(value: unknown): SerializedKvValue {
     return { type: "Object", data: serializeJs(value) };
 }
 
+function toNumber(value: string): number | undefined {
+    if (!value.trim()) {
+        return undefined;
+    }
+
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+}
+
 /**
  * Deserializes back a Kv Entry value serialized using `serializeKvValue` function
  *
@@ -194,44 +203,58 @@ export async function deserializeKvValue(body: Partial<SerializedKvValue>, kv: K
         throw new Error("No data type provided for the value", errorCause);
     }
 
-    if (!body?.data) {
+    if (body?.data === undefined) {
         throw new Error("No data provided for the value", errorCause);
     }
 
-    const evaluatedData = eval(`(${body.data})`)
-
     switch (body.type) {
         case "Number": {
-            if (typeof evaluatedData === "number") { return evaluatedData }
+            if (typeof body.data == "number") return body.data
+
+            const stringNumber = String(body.data)
+            const number = toNumber(stringNumber)
+            if (number != undefined) return number
+
+            const specialNumbers: Record<string, number> = {
+                "Infinity": Infinity,
+                "-Infinity": -Infinity,
+                "NaN": NaN,
+            }
+
+            if (specialNumbers[stringNumber] != undefined) {
+                return specialNumbers[stringNumber]
+            }
+
             throw new Error("Invalid Number received", errorCause);
         }
 
         case "String": {
-            if (typeof evaluatedData === "string") { return evaluatedData }
+            if (typeof body.data == "string") return body.data
             throw new Error("Invalid string received", errorCause);
         }
 
-        case "BigInt": {
-            if (typeof evaluatedData == "number") { return BigInt(evaluatedData) }
-            throw new Error("Invalid BigInt received", errorCause);
-        }
-
         case "Boolean": {
-            if (typeof evaluatedData === "boolean") { return evaluatedData }
+            if (typeof body.data == "boolean") return body.data
+            if (body.data == "true") return true
+            if (body.data == "false") return false
+
             throw new Error("Invalid boolean value received", errorCause);
         }
 
-        case "Object": {
-            if (evaluatedData instanceof Object) { return evaluatedData }
-            throw new Error("Invalid Object received", errorCause);
+        case "BigInt": {
+            const number = typeof body.data == "number" ? body.data : toNumber(String(body.data))
+            if (number != undefined) return BigInt(number)
+
+            throw new Error("Invalid BigInt received", errorCause);
         }
 
         case "KvU64": {
-            if (typeof evaluatedData == "number") {
+            const number = typeof body.data == "number" ? body.data : toNumber(String(body.data))
+            if (number != undefined) {
                 let errorMessage = ""
                 try {
                     const randomKey = ["random", crypto.randomUUID()]
-                    const result = await kv.atomic().sum(randomKey, BigInt(evaluatedData)).commit()
+                    const result = await kv.atomic().sum(randomKey, BigInt(number)).commit()
                     if (result.ok) {
                         const u64Value = (await kv.get(randomKey)).value
                         kv.delete(randomKey)
@@ -250,8 +273,21 @@ export async function deserializeKvValue(body: Partial<SerializedKvValue>, kv: K
             throw new Error("Invalid KvU64 number received", errorCause);
         }
 
+        case "Undefined": return undefined;
+
+        case "Null": return null;
+    }
+
+    const evaluatedData = eval(`(${body.data})`)
+
+    switch (body.type) {
+        case "Object": {
+            if (evaluatedData instanceof Object) return evaluatedData
+            throw new Error("Invalid Object received", errorCause);
+        }
+
         case "Array": {
-            if (evaluatedData instanceof Array) { return evaluatedData }
+            if (evaluatedData instanceof Array) return evaluatedData
             throw new Error("Invalid Array received", errorCause);
         }
 
@@ -261,31 +297,27 @@ export async function deserializeKvValue(body: Partial<SerializedKvValue>, kv: K
         }
 
         case "Set": {
-            if (evaluatedData instanceof Set) { return evaluatedData }
+            if (evaluatedData instanceof Set) return evaluatedData
             throw new Error("Invalid Set received", errorCause);
         }
 
         case "Map": {
-            if (evaluatedData instanceof Map) { return evaluatedData }
+            if (evaluatedData instanceof Map) return evaluatedData
             throw new Error("Invalid Map received", errorCause);
         }
 
         case "RegExp": {
-            if (evaluatedData instanceof RegExp) { return evaluatedData }
+            if (evaluatedData instanceof RegExp) return evaluatedData
             throw new Error("Invalid RegExp received", errorCause);
         }
 
         case "Uint8Array": {
-            if (evaluatedData instanceof Uint8Array) { return evaluatedData }
+            if (evaluatedData instanceof Uint8Array) return evaluatedData
             throw new Error("Invalid Uint8Array received", errorCause);
         }
 
-        case "Undefined": return undefined;
-
-        case "Null": return null;
-
         default:
-            throw new Error("Unsupported Data Type", errorCause);
+            throw new Error("Unsupported Data Type: " + body.type, errorCause);
     }
 }
 
