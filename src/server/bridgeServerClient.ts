@@ -115,19 +115,4 @@ export class BridgeServerClient {
             method: "DELETE"
         })
     }
-
-    async watch(key: SerializedKvKey, onChange: (updatedEntry: SerializedKvEntry) => void) {
-        try {
-            const response = await fetch(`${this.baseUrl}/watch?key=${JSON.stringify(key)}`)
-            if (!response.body) {
-                throw "No response body (stream) found."
-            }
-            const decoder = new TextDecoder();
-            for await (const chunk of response.body) {
-                onChange(JSON.parse(decoder.decode(chunk)));
-            }
-        } catch (err) {
-            throw "Error fetching or reading stream:" + err
-        }
-    }
 }
