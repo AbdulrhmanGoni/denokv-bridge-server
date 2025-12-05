@@ -4,7 +4,7 @@ import type { OpenBridgeServerOptions } from "./types.ts";
 /**
  * Starts the bridge server in Deno runtime
  *
- * @param kv Optional `Deno.Kv` instance. Defaults to `await Deno.openKv()`
+ * @param kv An instance of `Deno.Kv`.
  * @param options Optional configuration options
  * @param options.port Server port. Defaults to `47168`
  * @param options.authToken Authentication token to protect the server, if not set, the server will be publicly accessable. 
@@ -26,8 +26,7 @@ import type { OpenBridgeServerOptions } from "./types.ts";
  * // now the bridge server can only be accessed with "my-secret-token" authentication token passed as "Authorization" header
  * ```
  */
-export async function openBridgeServerInDeno(kv?: Deno.Kv, options?: OpenBridgeServerOptions): Promise<Deno.HttpServer<Deno.NetAddr>> {
-    kv = kv ? kv : await Deno.openKv()
+export function openBridgeServerInDeno(kv: Deno.Kv, options?: OpenBridgeServerOptions): Deno.HttpServer<Deno.NetAddr> {
     const authToken = options?.authToken ?? Deno.env.get("DENOKV_BRIDGE_SERVER_AUTH_TOKEN")
     const app = createBridgeApp(kv, { authToken })
     return Deno.serve({ port: options?.port ?? 47168 }, app.fetch)
