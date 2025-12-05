@@ -9,6 +9,7 @@ type CallBridgeServerParams = {
     body?: SerializedKvValue,
     method?: "GET" | "PUT" | "DELETE",
     options?: CallBridgeServerOptions,
+    headers?: Record<string, string>
 }
 
 type CallBridgeServerReturn<ResultT> = Promise<{
@@ -26,7 +27,7 @@ function optionsToUrlSearchParams(options: CallBridgeServerOptions): URLSearchPa
 }
 
 async function callBridgeServerRequest<ResultT = unknown>(
-    { url, method, body, options }: CallBridgeServerParams
+    { url, method, body, options, headers }: CallBridgeServerParams
 ): CallBridgeServerReturn<ResultT> {
     let res: Response;
     const returnValue: UnwrapPromise<CallBridgeServerReturn<ResultT>> = {
@@ -40,6 +41,7 @@ async function callBridgeServerRequest<ResultT = unknown>(
             {
                 method: method ?? "GET",
                 body: JSON.stringify(body),
+                headers,
             }
         );
     } catch {
@@ -78,13 +80,22 @@ export type BrowseReturn = {
     cursor: string;
 }
 
+type BridgeServerClientOptions = {
+    authToken: string
+}
+
 export class BridgeServerClient {
-    constructor(private baseUrl: string) { }
+    constructor(private baseUrl: string, options?: BridgeServerClientOptions) {
+        if (options?.authToken) this.headers = { Authorization: options.authToken }
+    }
+
+    private headers?: Record<string, string>;
 
     browse(options?: BrowsingOptions): CallBridgeServerReturn<BrowseReturn> {
         return callBridgeServerRequest<BrowseReturn>({
             url: `${this.baseUrl}/browse`,
             options,
+            headers: this.headers,
             method: "GET"
         })
     }
@@ -98,12 +109,14 @@ export class BridgeServerClient {
             },
             method: "PUT",
             body: value,
+            headers: this.headers,
         })
     }
 
     get(key: SerializedKvKey): CallBridgeServerReturn<SerializedKvEntry> {
         return callBridgeServerRequest<SerializedKvEntry>({
             url: `${this.baseUrl}/get/${encodeURIComponent(JSON.stringify(key))}`,
+            headers: this.headers,
             method: "GET"
         })
     }
@@ -112,6 +125,7 @@ export class BridgeServerClient {
         return callBridgeServerRequest<{ result: true }>({
             url: `${this.baseUrl}/delete`,
             options: { key },
+            headers: this.headers,
             method: "DELETE"
         })
     }

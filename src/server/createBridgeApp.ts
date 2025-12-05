@@ -38,10 +38,16 @@ import type { BlankEnv, BlankSchema } from "hono/types";
  *
  * All endpoints include CORS headers allowing cross-origin requests from any domain.
  */
-export function createBridgeApp(kv: Kv | Deno.Kv): Hono<BlankEnv, BlankSchema, "/"> {
+export function createBridgeApp(kv: Kv | Deno.Kv, options?: { authToken?: string }): Hono<BlankEnv, BlankSchema, "/"> {
     const app = new Hono()
 
     app.use(async (c, next) => {
+        const auth = c.req.header("Authorization")
+        if (options?.authToken) {
+            if (auth !== options.authToken) {
+                return c.json({ error: "Authorization Failed" }, 401)
+            }
+        }
         c.res.headers.set("Access-Control-Allow-Origin", "*")
         await next()
     })

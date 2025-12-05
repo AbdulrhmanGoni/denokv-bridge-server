@@ -2,7 +2,7 @@
   "name": "@denokv-gui-client/bridge-server",
   "version": "4.0.0",
   "tasks": {
-    "test": "deno test -N -R --allow-ffi --allow-sys tests/units tests/e2e/index.test.ts"
+    "test": "deno test -N -R -E --allow-ffi --allow-sys tests/units tests/e2e/index.test.ts"
   },
   "exports": "./src/index.ts",
   "imports": {

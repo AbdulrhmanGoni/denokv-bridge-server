@@ -6,6 +6,7 @@ import { browseEndpointSpec } from "./browse.spec.ts";
 import { setEndpointSpec } from "./set.spec.ts";
 import { getEndpointSpec } from "./get.spec.ts";
 import { deleteEndpointSpec } from "./delete.spec.ts";
+import { randomBytes } from "node:crypto";
 
 export type TestDependencies = {
   kv: Deno.Kv;
@@ -17,11 +18,16 @@ for (const element of fakeData) {
   await kv.set(element.key, element.value);
 }
 
-const server = await openBridgeServerInDeno(kv, 7963);
+const authToken = randomBytes(30).toString("base64")
+
+const server = await openBridgeServerInDeno(kv, { port: 7963, authToken });
 
 const testsDependencies = {
   kv,
-  bridgeServerClient: new BridgeServerClient(`http://${server?.addr.hostname}:${server.addr.port}`),
+  bridgeServerClient: new BridgeServerClient(
+    `http://${server.addr.hostname}:${server.addr.port}`,
+    { authToken }
+  ),
 };
 
 describe("End-to-End tests for Deno server", () => {
